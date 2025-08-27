@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Marine NGL Tool - Web Application
-A Flask-based web interface for the zNGL spam tool
+A Flask-based web interface for the mNGL spam tool
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -10,7 +10,7 @@ import time
 import queue
 import os
 import sys
-from main import zNGL
+from main import mNGL
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -19,23 +19,23 @@ app = Flask(__name__)
 running_instances = {}
 instance_counter = 0
 
-class WebNGL(zNGL):
-    """Extended zNGL class for web interface"""
+class WebNGL(mNGL):
+    """Extended mNGL class for web interface"""
     
     def __init__(self, username, threads, question, enable_emoji=False):
-        # Initialize base zNGL properties
+        # Initialize base mNGL properties
         self.messages = []
         self._username = username
         self._threads = threads
         self._question = question
         self._ngl = "https://ngl.link/api/submit"
         self._timeout = 15
-        self.NAME_TOOL = "zNGL Web Tool"
+        self.NAME_TOOL = "mNGL Web Tool"
         self.VERSION_TOOL = "v1.0.0"
         self.enable_emoji = enable_emoji
         
         # Initialize device ID and headers
-        self.device_id = self._convert()
+        self.device_id = self._random_str(36)
         self.base_headers = {
             "Accept": "*/*",
             "Accept-Encoding": "gzip, deflate, br",
@@ -66,11 +66,120 @@ class WebNGL(zNGL):
 
     def landing(self):
         """Override landing method for web interface"""
-        return "zNGL Web Tool"
+        return "mNGL Web Tool"
 
     def banner(self):
         """Override banner method for web interface"""
         pass
+        
+    def _convert(self, input_str: str = None) -> str:
+        """Convert input string to username format"""
+        if input_str is None:
+            return self._username
+            
+        input_str = input_str.strip()
+        if input_str.startswith("https://ngl.link/"):
+            try:
+                from urllib.parse import urlparse
+                _parsed = urlparse(input_str)
+                if _parsed.scheme != "https" or _parsed.netloc != "ngl.link":
+                    return None
+                username = _parsed.path.lstrip("/")
+                if not username:
+                    return None
+                return username
+            except Exception:
+                return None
+        else:
+            if not input_str:
+                return None
+            return input_str
+            
+    def _random_str(self, length: int = 10, chars: str = "abcdefghijklmnopqrstuvwxyz0123456789") -> str:
+        """Generate random string"""
+        import random
+        return "".join(random.choice(chars) for _ in range(length))
+        
+    def _check_user(self, username: str) -> bool:
+        """Check if user exists"""
+        try:
+            import requests
+            response = requests.get(
+                f"https://ngl.link/{username}",
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept": "text/html",
+                },
+                timeout=self._timeout,
+                verify=True,
+            )
+            return "Could not find user" not in response.text
+        except Exception:
+            return False
+            
+    def run(self, target: str = None, threads: int = None, note: str = None) -> None:
+        """Run the attack"""
+        target = target or self._username
+        threads = threads or self._threads
+        note = note or self._question
+        
+        self.should_stop = False
+        self.successful_runs = 0
+        
+        # Start sending messages
+        while not self.should_stop and self.successful_runs < threads:
+            try:
+                self.mNGL(1)  # Send one message
+                time.sleep(0.1)  # Small delay between requests
+            except Exception as e:
+                print(f"Error in attack: {e}")
+                break
+                
+    def mNGL(self, thread_id: int):
+        """Send NGL message"""
+        import random
+        import requests
+        from urllib.parse import urlencode
+        
+        icon = (random.choice([
+            " 😊", " 😎", " 😍", " 😉", " 😁", " 😄", " 😃", " 🙂", " 😆", " 😅", " 🤣",
+            " 😂", " 😋", " 😛", " 😜", " 🤪", " 🤩", " 🥰", " 😇", " 🙃", " 🥹", " 😌",
+            " 🤗", " 😏", " 🤭", " 🫢", " 🫠", " 🤫", " 😭", " 😢", " 😥", " 😓", " 😞",
+            " 😔", " 🙁", " ☹️", " 😠", " 😡", " 🤬", " 😤", " 😖", " 😫", " 😩", " 🥺",
+            " 😱", " 😨", " 😰", " 😵", " 🤯", " 😳", " 😬", " 🫣", " 🥴", " 🤢", " 🤮",
+            " 😷", " 🤒", " 🤕", " 🤧", " 🥶", " 🥵", " 😈", " 👿", " 💀", " 👻", " 👽",
+            " 😺", " 😸", " 😹", " 😻", " 😼", " 😽", " 🙀", " 😿", " 😾", " 🤡", " ❤️",
+            " 🧡", " 💛", " 💚", " 💙", " 💜", " 🤎", " 🖤", " 🤍", " 💓", " 💗", " 💖",
+            " 💘", " 💝", " 💞", " 💕"
+        ]) if self.enable_emoji else "")
+        
+        try:
+            data = {
+                "username": self._username,
+                "question": self._question + icon,
+                "deviceId": self.device_id,
+                "gameSlug": "",
+                "referrer": "",
+            }
+            
+            response = requests.post(
+                self._ngl,
+                headers=self.base_headers,
+                data=urlencode(data),
+                timeout=self._timeout,
+                verify=True,
+            )
+            response.raise_for_status()
+            
+            with self.success_lock:
+                self.successful_runs += 1
+                if self.successful_runs >= self._threads:
+                    self.should_stop = True
+            
+            return True
+        except Exception as e:
+            print(f"Error sending message: {e}")
+            return False
 
 # Routes
 @app.route('/')
@@ -89,7 +198,7 @@ def start_attack():
         # Extract and validate input
         username = data.get('username', '').strip()
         threads = int(data.get('threads', 50))
-        question = data.get('question', 'zNGL Tool').strip()
+        question = data.get('question', 'mNGL Tool').strip()
         enable_emoji = data.get('enable_emoji', False)
         
         # Validation
@@ -102,12 +211,18 @@ def start_attack():
         if len(question) > 70:
             return jsonify({'error': 'Tin nhắn không được quá 70 ký tự'}), 400
         
+        # Convert username if it's a URL
+        temp_instance = WebNGL("temp", 1, "temp")
+        converted_username = temp_instance._convert(username)
+        if not converted_username:
+            return jsonify({'error': 'Username không hợp lệ'}), 400
+        
         # Create NGL instance
-        ngl_instance = WebNGL(username, threads, question, enable_emoji)
+        ngl_instance = WebNGL(converted_username, threads, question, enable_emoji)
         
         # Check if user exists
-        if not ngl_instance._check_user(username):
-            return jsonify({'error': f'Người dùng "{username}" không tồn tại'}), 400
+        if not ngl_instance._check_user(converted_username):
+            return jsonify({'error': f'Người dùng "{converted_username}" không tồn tại'}), 400
         
         # Generate instance ID
         instance_counter += 1
@@ -123,7 +238,7 @@ def start_attack():
         # Start attack in background thread
         def run_attack():
             try:
-                ngl_instance.run(username, threads, question)
+                ngl_instance.run(converted_username, threads, question)
                 # Check if attack completed successfully or was stopped
                 if ngl_instance.successful_runs >= threads:
                     running_instances[instance_id]['status'] = 'completed'

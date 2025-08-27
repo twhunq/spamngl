@@ -59,7 +59,7 @@ function getFormData() {
     return {
         username: document.getElementById('username').value.trim(),
         threads: parseInt(document.getElementById('threads').value),
-        question: document.getElementById('question').value.trim() || 'zNGL Tool',
+        question: document.getElementById('question').value.trim() || 'mNGL Tool',
         enable_emoji: document.getElementById('enableEmoji').checked
     };
 }

@@ -58,7 +58,7 @@ Mở trình duyệt và truy cập: `http://localhost:5000`
 
 ```
 NGL/
-├── main.py              # Core zNGL tool
+├── main.py              # Core mNGL tool
 ├── web_app.py           # Flask web application
 ├── requirements.txt     # Python dependencies
 ├── vercel.json         # Vercel configuration

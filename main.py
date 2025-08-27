@@ -8,7 +8,7 @@ from colorama import init, Fore, Style
 from pystyle import Add, Center, Anime, Colors, Colorate, Write, System
 
 
-class zNGL:
+class mNGL:
 
     def __init__(self,
                  _username: str = "",
@@ -20,7 +20,7 @@ class zNGL:
         self._question = _question
         self._ngl = "https://ngl.link/api/submit"
         self._timeout = 15
-        self.NAME_TOOL = "zNGL Tool"
+        self.NAME_TOOL = "mNGL Tool"
         self.VERSION_TOOL = "v1.0.0"
         if os.name == "nt":
             os.system(
@@ -157,7 +157,7 @@ class zNGL:
                 interval=0.005,
             ).strip()
             if self._question == "":
-                self._question = self.NAME_TOOL
+                self._question = "mNGL Tool"
                 break
             if len(self._question) > 70:
                 print(
@@ -252,7 +252,7 @@ Press [ENTER] to continue...
             rainbow_str += rainbow_colors[i % len(rainbow_colors)] + char
         return rainbow_str + Style.RESET_ALL
 
-    def zNGL(self, thread_id: int):
+    def mNGL(self, thread_id: int):
         icon = (random.choice([
             " 😊", " 😎", " 😍", " 😉", " 😁", " 😄", " 😃", " 🙂", " 😆", " 😅", " 🤣",
             " 😂", " 😋", " 😛", " 😜", " 🤪", " 🤩", " 🥰", " 😇", " 🙃", " 🥹", " 😌",
@@ -303,7 +303,7 @@ Press [ENTER] to continue...
 
     def thread_worker(self, thread_id: int):
         try:
-            self.zNGL(thread_id)
+            self.mNGL(thread_id)
         except Exception as e:
             self.messages.append(f"ERROR: {str(e)}")
 
@@ -391,6 +391,6 @@ Press [ENTER] to continue...
 
 if __name__ == "__main__":
     init()
-    ngl = zNGL()
+    ngl = mNGL()
     ngl.banner()
     ngl.run(ngl._username, ngl._threads, ngl._question)
