@@ -29,7 +29,7 @@ class WebNGL(mNGL):
         self._threads = threads
         self._question = question
         self._ngl = "https://ngl.link/api/submit"
-        self._timeout = 15
+        self._timeout = 8  # Giảm timeout để tăng tốc độ
         self.NAME_TOOL = "mNGL Web Tool"
         self.VERSION_TOOL = "v1.0.0"
         self.enable_emoji = enable_emoji
@@ -126,11 +126,11 @@ class WebNGL(mNGL):
         self.should_stop = False
         self.successful_runs = 0
         
-        # Start sending messages
+        # Start sending messages with optimized speed
         while not self.should_stop and self.successful_runs < threads:
             try:
                 self.mNGL(1)  # Send one message
-                time.sleep(0.1)  # Small delay between requests
+                time.sleep(0.05)  # Giảm delay từ 0.1s xuống 0.05s để tăng tốc độ
             except Exception as e:
                 print(f"Error in attack: {e}")
                 break
@@ -167,7 +167,7 @@ class WebNGL(mNGL):
                 headers=self.base_headers,
                 data=urlencode(data),
                 timeout=self._timeout,
-                verify=True,
+                verify=False,  # Tắt SSL verification để tăng tốc độ
             )
             response.raise_for_status()
             

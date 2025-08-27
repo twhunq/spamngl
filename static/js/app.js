@@ -293,29 +293,13 @@ function updateStatistics(instances) {
         totalMessages += instance.successful_runs;
     });
     
-    // Animate number changes
-    animateNumberChange('totalAttacks', instances.length);
-    animateNumberChange('totalMessages', totalMessages);
-    animateNumberChange('activeAttacks', activeCount);
+    // Update numbers directly without animation to avoid jumping
+    document.getElementById('totalAttacks').textContent = instances.length;
+    document.getElementById('totalMessages').textContent = totalMessages;
+    document.getElementById('activeAttacks').textContent = activeCount;
 }
 
-// Animate number changes
-function animateNumberChange(elementId, targetValue) {
-    const element = document.getElementById(elementId);
-    const currentValue = parseInt(element.textContent) || 0;
-    const increment = (targetValue - currentValue) / 20;
-    let current = currentValue;
-    
-    const timer = setInterval(() => {
-        current += increment;
-        if ((increment > 0 && current >= targetValue) || (increment < 0 && current <= targetValue)) {
-            element.textContent = targetValue;
-            clearInterval(timer);
-        } else {
-            element.textContent = Math.floor(current);
-        }
-    }, 50);
-}
+
 
 // Stop attack
 async function stopAttack(instanceId) {
@@ -374,8 +358,8 @@ function monitorAttackCompletion() {
 function startStatusUpdates() {
     if (updateInterval) clearInterval(updateInterval);
     
-    // Adjust update frequency based on screen size
-    const updateFrequency = window.innerWidth <= 768 ? 3000 : 2000;
+    // Adjust update frequency based on screen size - optimized for speed
+    const updateFrequency = window.innerWidth <= 768 ? 1500 : 1000; // Giảm thời gian cập nhật để tăng tốc độ
     updateInterval = setInterval(updateInstances, updateFrequency);
 }
 

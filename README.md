@@ -2,6 +2,19 @@
 
 Công cụ Spam NGL hiệu quả với giao diện web đẹp mắt và dễ sử dụng.
 
+## ⚡ Tối ưu hóa tốc độ (Speed Optimizations)
+
+Tool đã được tối ưu hóa để đạt tốc độ spam cao nhất:
+
+- **Timeout giảm**: Từ 15s xuống 8s
+- **SSL Verification**: Tắt để tăng tốc độ kết nối
+- **Connection Pooling**: Tái sử dụng connection
+- **Thread Timeout**: Giảm xuống 2s
+- **Request Delay**: Giảm xuống 0.05s
+- **Status Updates**: Cập nhật nhanh hơn (1-1.5s)
+- **Session Reuse**: Sử dụng requests.Session()
+- **Batch Processing**: Xử lý theo batch để tăng hiệu suất
+
 ## ✨ Tính năng
 
 - 🎯 **Giao diện web hiện đại**: Thiết kế đen trắng với hiệu ứng đẹp mắt

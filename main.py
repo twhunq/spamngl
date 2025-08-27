@@ -19,7 +19,7 @@ class mNGL:
         self._threads = _threads
         self._question = _question
         self._ngl = "https://ngl.link/api/submit"
-        self._timeout = 15
+        self._timeout = 8  # Giảm timeout từ 15s xuống 8s để tăng tốc độ
         self.NAME_TOOL = "mNGL Tool"
         self.VERSION_TOOL = "v1.0.0"
         if os.name == "nt":
@@ -66,6 +66,9 @@ class mNGL:
         self.should_stop = False
         self.print_lock = threading.Lock()
         self.print_queue = queue.Queue()
+        # Tạo session để tái sử dụng connection và tăng tốc độ
+        self.session = requests.Session()
+        self.session.headers.update(self.base_headers)
 
         Anime.Fade(
             Center.Center(self.landing()),
@@ -272,12 +275,12 @@ Press [ENTER] to continue...
                 "gameSlug": "",
                 "referrer": "",
             }
-            response = requests.post(
+            # Sử dụng session thay vì requests.post để tái sử dụng connection
+            response = self.session.post(
                 self._ngl,
-                headers=self.base_headers,
                 data=urlencode(data),
                 timeout=self._timeout,
-                verify=True,
+                verify=False,  # Tắt SSL verification để tăng tốc độ
             )
             response.raise_for_status()
             with self.success_lock:
@@ -367,13 +370,14 @@ Press [ENTER] to continue...
                     t.daemon = True
                     thread_list.append(t)
                     t.start()
+                # Giảm thời gian join để tăng tốc độ
                 for t in thread_list:
-                    t.join(
-                        timeout=max(0, self._timeout -
-                                    (time.time() - start_time)))
-                if time.time() - start_time > self._timeout:
+                    t.join(timeout=2)  # Giảm timeout join xuống 2s
+                
+                # Kiểm tra nhanh hơn
+                if time.time() - start_time > self._timeout * 0.8:  # Giảm threshold xuống 80%
                     print(
-                        f"{Fore.RED}⚠️ Thread {cycle_count} failed, trying to the next thread.{Style.RESET_ALL}"
+                        f"{Fore.RED}⚠️ Thread {cycle_count} timeout, continuing...{Style.RESET_ALL}"
                     )
             print(
                 f"{Fore.GREEN}✅ Hoàn thành! Đã gửi {self.successful_runs} tin nhắn thành công.{Style.RESET_ALL}"
