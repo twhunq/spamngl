@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine NGL Tool</title>
+    <meta name="description" content="Công cụ Spam NGL hiệu quả và dễ sử dụng">
+    <meta name="keywords" content="NGL, spam, tool, marine">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-rocket"></i> Marine NGL Tool</h1>
+            <p>Công cụ Spam NGL</p>
+        </div>
+
+        <!-- Configuration Card -->
+        <div class="card">
+            <h2><i class="fas fa-cog"></i> Cấu Hình</h2>
+            <form id="attackForm">
+                <div class="form-group">
+                    <label for="username">Tên Người Dùng NGL hoặc Link:</label>
+                    <input type="text" id="username" class="form-control" 
+                           placeholder="Nhập username hoặc https://ngl.link/username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="threads">Số Lượng Tin Nhắn (1-500):</label>
+                    <input type="number" id="threads" class="form-control" 
+                           min="1" max="500" value="50" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="question">Tin Nhắn (tùy chọn, tối đa 70 ký tự):</label>
+                    <input type="text" id="question" class="form-control" 
+                           placeholder="Nhập tin nhắn của bạn" maxlength="70">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableEmoji">
+                        <label for="enableEmoji">Bật Emoji Ngẫu Nhiên</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Bắt Đầu Tấn Công
+                </button>
+            </form>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Active Attacks Card -->
+        <div class="card">
+            <h2><i class="fas fa-chart-line"></i> Các Cuộc Tấn Công Đang Hoạt Động</h2>
+            <div id="instancesContainer">
+                <p class="text-muted">Không có cuộc tấn công nào đang hoạt động</p>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="card">
+            <h2><i class="fas fa-info-circle"></i> Thống Kê</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalAttacks">0</div>
+                    <div class="stat-label">Tổng Số Cuộc Tấn Công</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalMessages">0</div>
+                    <div class="stat-label">Tin Nhắn Đã Gửi</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="activeAttacks">0</div>
+                    <div class="stat-label">Cuộc Tấn Công Đang Hoạt Động</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
