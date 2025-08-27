@@ -300,24 +300,28 @@ def stop_attack(instance_id):
     
     return jsonify({'success': True, 'message': 'Đang dừng tấn công...'})
 
+
+
 @app.route('/instances')
 def list_instances():
     """List all attack instances"""
     instances = []
     
     for instance_id, instance in running_instances.items():
-        ngl_instance = instance['instance']
-        instances.append({
-            'id': instance_id,
-            'status': instance['status'],
-            'username': ngl_instance._username,
-            'question': ngl_instance._question,
-            'threads': ngl_instance._threads,
-            'successful_runs': ngl_instance.successful_runs,
-            'target_threads': ngl_instance._threads,
-            'start_time': instance['start_time'],
-            'completion_message': instance.get('completion_message', None)
-        })
+        # Only include running instances
+        if instance['status'] == 'running':
+            ngl_instance = instance['instance']
+            instances.append({
+                'id': instance_id,
+                'status': instance['status'],
+                'username': ngl_instance._username,
+                'question': ngl_instance._question,
+                'threads': ngl_instance._threads,
+                'successful_runs': ngl_instance.successful_runs,
+                'target_threads': ngl_instance._threads,
+                'start_time': instance['start_time'],
+                'completion_message': instance.get('completion_message', None)
+            })
     
     return jsonify(instances)
 

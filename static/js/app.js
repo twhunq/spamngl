@@ -3,6 +3,8 @@ let activeInstances = new Set();
 let updateInterval;
 let completedInstances = new Set();
 
+
+
 // DOM Elements
 const attackForm = document.getElementById('attackForm');
 const alertContainer = document.getElementById('alertContainer');
@@ -10,6 +12,11 @@ const instancesContainer = document.getElementById('instancesContainer');
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // Force clear any existing instances first
+    if (instancesContainer) {
+        instancesContainer.innerHTML = '';
+    }
+    
     attackForm.addEventListener('submit', handleAttackSubmit);
     updateInstances();
     startStatusUpdates();
@@ -197,7 +204,21 @@ function getAlertIcon(type) {
 async function updateInstances() {
     try {
         const response = await fetch('/instances');
-        const instances = await response.json();
+        const allInstances = await response.json();
+        
+        // Debug: Log all instances to see what we're getting
+        console.log('All instances received:', allInstances);
+        
+        // Filter out completed or stopped attacks - only show running ones
+        const instances = allInstances.filter(instance => {
+            console.log(`Instance ${instance.id}: status = ${instance.status}`);
+            return instance.status === 'running';
+        });
+        
+        console.log('Filtered instances (running only):', instances);
+        
+        // Force clear the container first
+        instancesContainer.innerHTML = '';
         
         if (instances.length === 0) {
             instancesContainer.innerHTML = `
@@ -206,10 +227,12 @@ async function updateInstances() {
                     <p class="text-muted">Không có cuộc tấn công nào đang hoạt động</p>
                 </div>
             `;
+            console.log('Container cleared - no running instances');
             return;
         }
         
         const html = generateInstancesHTML(instances);
+        console.log('Generated HTML for running instances:', html);
         instancesContainer.innerHTML = html;
         
         updateStatistics(instances);
@@ -358,6 +381,9 @@ function monitorAttackCompletion() {
 function startStatusUpdates() {
     if (updateInterval) clearInterval(updateInterval);
     
+    // Force immediate update to apply filter
+    updateInstances();
+    
     // Adjust update frequency based on screen size - optimized for speed
     const updateFrequency = window.innerWidth <= 768 ? 1500 : 1000; // Giảm thời gian cập nhật để tăng tốc độ
     updateInterval = setInterval(updateInstances, updateFrequency);
@@ -385,6 +411,8 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+
+
 // Add service worker for offline support (optional)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
@@ -397,3 +425,5 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
+
