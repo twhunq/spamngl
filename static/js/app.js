@@ -13,7 +13,44 @@ document.addEventListener('DOMContentLoaded', function() {
     attackForm.addEventListener('submit', handleAttackSubmit);
     updateInstances();
     startStatusUpdates();
+    
+    // Add mobile-specific optimizations
+    addMobileOptimizations();
 });
+
+// Mobile optimizations
+function addMobileOptimizations() {
+    // Prevent zoom on input focus (iOS)
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+    });
+    
+    // Add touch feedback
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.95)';
+        });
+        
+        button.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+    });
+    
+    // Optimize for mobile performance
+    if (window.innerWidth <= 768) {
+        // Reduce update frequency on mobile
+        if (updateInterval) clearInterval(updateInterval);
+        updateInterval = setInterval(updateInstances, 3000); // 3 seconds instead of 2
+    }
+}
 
 // Form submission handler
 async function handleAttackSubmit(e) {
@@ -43,6 +80,13 @@ async function handleAttackSubmit(e) {
             startStatusUpdates();
             monitorAttackCompletion();
             resetForm();
+            
+            // Scroll to instances on mobile
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    instancesContainer.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }
         } else {
             const data = await response.json();
             showAlert(data.error, 'danger');
@@ -59,7 +103,7 @@ function getFormData() {
     return {
         username: document.getElementById('username').value.trim(),
         threads: parseInt(document.getElementById('threads').value),
-        question: document.getElementById('question').value.trim() || 'mNGL Tool',
+        question: document.getElementById('question').value.trim() || 'Marine',
         enable_emoji: document.getElementById('enableEmoji').checked
     };
 }
@@ -73,6 +117,11 @@ function validateFormData(data) {
     
     if (data.threads < 1 || data.threads > 500) {
         showAlert('Số threads phải từ 1 đến 500', 'danger');
+        return false;
+    }
+    
+    if (data.question.length > 70) {
+        showAlert('Tin nhắn không được quá 70 ký tự', 'danger');
         return false;
     }
     
@@ -128,7 +177,7 @@ function createAlertElement(message, type) {
     
     alert.innerHTML = `
         <i class="fas ${icon}"></i>
-        ${message}
+        <span>${message}</span>
         <button class="alert-close" onclick="this.parentElement.remove()">×</button>
     `;
     
@@ -151,7 +200,12 @@ async function updateInstances() {
         const instances = await response.json();
         
         if (instances.length === 0) {
-            instancesContainer.innerHTML = '<p class="text-muted">Không có cuộc tấn công nào đang hoạt động</p>';
+            instancesContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; color: #666; margin-bottom: 15px;"></i>
+                    <p class="text-muted">Không có cuộc tấn công nào đang hoạt động</p>
+                </div>
+            `;
             return;
         }
         
@@ -239,9 +293,28 @@ function updateStatistics(instances) {
         totalMessages += instance.successful_runs;
     });
     
-    document.getElementById('totalAttacks').textContent = instances.length;
-    document.getElementById('totalMessages').textContent = totalMessages;
-    document.getElementById('activeAttacks').textContent = activeCount;
+    // Animate number changes
+    animateNumberChange('totalAttacks', instances.length);
+    animateNumberChange('totalMessages', totalMessages);
+    animateNumberChange('activeAttacks', activeCount);
+}
+
+// Animate number changes
+function animateNumberChange(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    const currentValue = parseInt(element.textContent) || 0;
+    const increment = (targetValue - currentValue) / 20;
+    let current = currentValue;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= targetValue) || (increment < 0 && current <= targetValue)) {
+            element.textContent = targetValue;
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.floor(current);
+        }
+    }, 50);
 }
 
 // Stop attack
@@ -300,5 +373,43 @@ function monitorAttackCompletion() {
 // Start status updates
 function startStatusUpdates() {
     if (updateInterval) clearInterval(updateInterval);
-    updateInterval = setInterval(updateInstances, 2000);
+    
+    // Adjust update frequency based on screen size
+    const updateFrequency = window.innerWidth <= 768 ? 3000 : 2000;
+    updateInterval = setInterval(updateInstances, updateFrequency);
+}
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    // Restart status updates with new frequency
+    startStatusUpdates();
+});
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + Enter to submit form
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+            attackForm.dispatchEvent(new Event('submit'));
+        }
+    }
+    
+    // Escape to close alerts
+    if (e.key === 'Escape') {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => alert.remove());
+    }
+});
+
+// Add service worker for offline support (optional)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+                console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
 }

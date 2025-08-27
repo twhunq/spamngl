@@ -157,7 +157,7 @@ class mNGL:
                 interval=0.005,
             ).strip()
             if self._question == "":
-                self._question = "mNGL Tool"
+                self._question = "Marine"
                 break
             if len(self._question) > 70:
                 print(

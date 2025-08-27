@@ -198,7 +198,7 @@ def start_attack():
         # Extract and validate input
         username = data.get('username', '').strip()
         threads = int(data.get('threads', 50))
-        question = data.get('question', 'mNGL Tool').strip()
+        question = data.get('question', 'Marine').strip()
         enable_emoji = data.get('enable_emoji', False)
         
         # Validation
